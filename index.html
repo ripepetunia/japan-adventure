@@ -8,158 +8,183 @@
 <style>
 body {
   margin: 0;
-  font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+  font-family: -apple-system, system-ui;
   background: #0b1220;
-  color: #ffffff;
+  color: white;
 }
-
 .app {
   max-width: 520px;
   margin: auto;
-  padding: 16px;
+  padding: 16px 16px 90px;
 }
-
-h1 {
-  margin: 0 0 8px;
-}
-
+h1 { margin: 0 0 6px; }
 .card {
   background: rgba(255,255,255,0.08);
   border-radius: 14px;
   padding: 12px;
   margin-bottom: 12px;
 }
-
-button {
-  width: 100%;
+button, input {
   padding: 10px;
   border-radius: 10px;
   border: none;
   font-size: 15px;
-  font-weight: 600;
 }
-
-.primary {
-  background: #7dd3fc;
-  color: #000;
-}
-
-.small {
-  opacity: 0.75;
-  font-size: 13px;
-}
-
+.primary { background:#7dd3fc; color:#000; }
+.small { opacity:.75; font-size:13px; }
 .mission {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 10px;
+  display:flex; justify-content:space-between; align-items:center;
   background: rgba(255,255,255,0.08);
-  margin-bottom: 8px;
+  padding:10px; border-radius:10px; margin-bottom:8px;
 }
+.stickers { font-size:32px; line-height:1.4; }
 
-.stickers {
-  font-size: 32px;
-  line-height: 1.4;
+.tabs {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #111827;
+  display: flex;
+  border-top: 1px solid rgba(255,255,255,0.1);
 }
-
-select {
-  width: 100%;
-  padding: 10px;
-  border-radius: 10px;
-  font-size: 15px;
+.tabs button {
+  flex:1;
+  background:none;
+  color:white;
+  padding:12px;
+  font-weight:600;
 }
+.tabs button.active {
+  background:#1f2937;
+}
+progress { width:100%; height:16px; }
 </style>
 </head>
 
 <body>
 <div class="app">
-  <h1>🇯🇵 Our Japan Adventure</h1>
-  <div class="small">Pick a city, do a mission, earn stickers.</div>
+  <div id="screen"></div>
+</div>
 
-  <div class="card">
-    <strong>Choose a city</strong><br><br>
-    <select id="city" onchange="render()">
-      <option value="tokyo">Tokyo</option>
-      <option value="kyoto">Kyoto</option>
-      <option value="osaka">Osaka</option>
-    </select>
-  </div>
-
-  <div class="card" id="missions"></div>
-
-  <div class="card">
-    <strong>🎒 Sticker Book</strong><br><br>
-    <div class="stickers" id="stickers">No stickers yet.</div>
-    <div class="small" id="count"></div>
-    <button onclick="resetAll()">Reset (this device)</button>
-  </div>
+<div class="tabs">
+  <button onclick="setTab('adventure')" id="tab-adventure">🎒 Adventure</button>
+  <button onclick="setTab('money')" id="tab-money">💰 Money</button>
+  <button onclick="setTab('places')" id="tab-places">📍 Places</button>
 </div>
 
 <script>
-const DATA = {
-  tokyo: [
-    { title: "Ride a super train", sticker: "🚅" },
-    { title: "Eat ramen noodles", sticker: "🍜" },
-    { title: "Find a robot", sticker: "🤖" }
+let tab = localStorage.getItem("tab") || "adventure";
+const KEY_STICKERS = "japan_stickers";
+const KEY_MONEY = "japan_money";
+
+const missions = {
+  tokyo:[
+    {t:"Ride a super train",s:"🚅"},
+    {t:"Eat ramen",s:"🍜"},
+    {t:"Find a robot",s:"🤖"}
   ],
-  kyoto: [
-    { title: "Visit a temple", sticker: "⛩️" },
-    { title: "Try a new snack", sticker: "🏮" }
+  kyoto:[
+    {t:"Visit a temple",s:"⛩️"},
+    {t:"Try a new snack",s:"🏮"}
   ],
-  osaka: [
-    { title: "Try sushi", sticker: "🍣" },
-    { title: "Find a tall view", sticker: "🗻" }
+  osaka:[
+    {t:"Try sushi",s:"🍣"},
+    {t:"Find a tall view",s:"🗻"}
   ]
 };
 
-const KEY = "japan_adventure_v1";
-
-function load() {
-  try { return JSON.parse(localStorage.getItem(KEY)) || []; }
-  catch { return []; }
+function setTab(t){
+  tab=t;
+  localStorage.setItem("tab",t);
+  render();
 }
 
-function save(arr) {
-  localStorage.setItem(KEY, JSON.stringify(arr));
+function getStickers(){
+  return JSON.parse(localStorage.getItem(KEY_STICKERS)||"[]");
+}
+function saveSticker(s){
+  let a=getStickers(); a.push(s);
+  localStorage.setItem(KEY_STICKERS,JSON.stringify(a));
+  render();
 }
 
-function earn(sticker) {
-  const s = load();
-  s.push(sticker);
-  save(s);
-  renderStickers();
+function getMoney(){
+  return JSON.parse(localStorage.getItem(KEY_MONEY)||JSON.stringify({
+    flights:{saved:0,goal:3000},
+    hotels:{saved:0,goal:2500},
+    food:{saved:0,goal:1500}
+  }));
+}
+function saveMoney(m){
+  localStorage.setItem(KEY_MONEY,JSON.stringify(m));
 }
 
-function render() {
-  const city = document.getElementById("city").value;
-  const missions = DATA[city];
+function render(){
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+  document.getElementById("tab-"+tab).classList.add("active");
 
-  document.getElementById("missions").innerHTML =
-    "<strong>Missions</strong><br><br>" +
-    missions.map(m =>
-      `<div class="mission">
-        <div>${m.title}</div>
-        <button class="primary" onclick="earn('${m.sticker}')">Earn ${m.sticker}</button>
-      </div>`
-    ).join("");
-
-  renderStickers();
+  if(tab==="adventure") renderAdventure();
+  if(tab==="money") renderMoney();
+  if(tab==="places") renderPlaces();
 }
 
-function renderStickers() {
-  const s = load();
-  document.getElementById("stickers").textContent =
-    s.length ? s.join(" ") : "No stickers yet.";
-  document.getElementById("count").textContent =
-    "Stickers earned: " + s.length;
+function renderAdventure(){
+  let s=getStickers();
+  screen.innerHTML=`
+    <h1>🇯🇵 Our Japan Adventure</h1>
+    <div class="small">Do missions. Earn stickers.</div>
+
+    ${Object.keys(missions).map(city=>`
+      <div class="card">
+        <strong>${city.toUpperCase()}</strong><br><br>
+        ${missions[city].map(m=>`
+          <div class="mission">
+            <div>${m.t}</div>
+            <button class="primary" onclick="saveSticker('${m.s}')">Earn ${m.s}</button>
+          </div>
+        `).join("")}
+      </div>
+    `).join("")}
+
+    <div class="card">
+      <strong>🎒 Stickers</strong><br><br>
+      <div class="stickers">${s.length?s.join(" "):"No stickers yet"}</div>
+    </div>
+  `;
 }
 
-function resetAll() {
-  localStorage.removeItem(KEY);
-  renderStickers();
+function renderMoney(){
+  let m=getMoney();
+  screen.innerHTML=`
+    <h1>💰 Money Goals</h1>
+    <div class="small">Fill the bars to unlock Japan.</div>
+
+    ${Object.keys(m).map(k=>`
+      <div class="card">
+        <strong>${k.toUpperCase()}</strong>
+        <progress value="${m[k].saved}" max="${m[k].goal}"></progress>
+        <div class="small">$${m[k].saved} / $${m[k].goal}</div><br>
+        <button onclick="m[k].saved+=100; saveMoney(m); render()">Add $100</button>
+      </div>
+    `).join("")}
+  `;
+}
+
+function renderPlaces(){
+  screen.innerHTML=`
+    <h1>📍 Places & Experiences</h1>
+    <div class="small">We’ll build this next.</div>
+
+    <div class="card">
+      Examples:
+      <ul>
+        <li>⚾ Tokyo baseball game</li>
+        <li>🎢 Tokyo Disney</li>
+        <li>🏛️ Hiroshima Peace Memorial Museum</li>
+      </ul>
+    </div>
+  `;
 }
 
 render();
