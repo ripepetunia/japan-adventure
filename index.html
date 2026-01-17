@@ -3,89 +3,332 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Japan Adventure (Debug)</title>
+<title>Our Japan Adventure</title>
+
 <style>
-  body{margin:0;font-family:-apple-system,system-ui;background:#0b1220;color:#fff}
-  .app{max-width:620px;margin:auto;padding:16px}
-  .card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;margin:12px 0}
-  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;white-space:pre-wrap;word-break:break-word}
-  .ok{color:#86efac;font-weight:700}
-  .bad{color:#fca5a5;font-weight:800}
-  button{padding:10px 12px;border-radius:10px;border:none;font-weight:700}
+body{margin:0;font-family:-apple-system,system-ui;background:#0b1220;color:#fff}
+.app{max-width:620px;margin:auto;padding:16px 16px 90px}
+h1{margin:0 0 6px;font-size:32px}
+.card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px;margin:12px 0}
+.small{opacity:.75;font-size:13px}
+.tabs{position:fixed;bottom:0;left:0;right:0;background:#111827;display:flex;border-top:1px solid rgba(255,255,255,.1)}
+.tabs button{flex:1;background:none;color:#fff;padding:12px;font-weight:800;opacity:.75;border:none}
+.tabs button.active{background:#1f2937;opacity:1}
+button,input,select,textarea{padding:10px;border-radius:12px;border:none;font-size:15px}
+.primary{background:#7dd3fc;color:#000;font-weight:800}
+.row{display:flex;gap:8px;align-items:center}
+.row > *{flex:1}
+progress{width:100%;height:16px}
+
+.mission{display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(255,255,255,.08);padding:10px;border-radius:12px;margin-bottom:8px}
+.stickers{font-size:32px;line-height:1.4}
+
+.pillbar{display:flex;gap:8px;flex-wrap:wrap}
+.pill{padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-weight:700}
+.pill.active{background:#1f2937}
+
+.idea{display:flex;gap:10px;align-items:flex-start}
+.idea-main{flex:1}
+.idea-title{font-weight:900;font-size:16px}
+.idea-meta{opacity:.75;font-size:12px;margin-top:2px}
+.idea-actions{display:flex;flex-direction:column;gap:8px}
+.idea-actions button{padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.10);color:#fff;font-weight:900}
+.idea-actions button.star{background:rgba(253,224,71,.18)}
+.idea-actions button.vote{background:rgba(125,211,252,.18)}
+textarea{min-height:70px}
 </style>
 </head>
+
 <body>
 <div class="app">
-  <h1>🇯🇵 Japan Adventure</h1>
-  <div class="card">
-    <div class="ok" id="status">Booting…</div>
-    <div class="mono" id="details">If this stays stuck, JS is not executing.</div>
-  </div>
+  <div id="screen"></div>
+</div>
 
-  <div class="card" id="ui">
-    <div>UI placeholder…</div>
-  </div>
-
-  <div class="card">
-    <button onclick="location.reload()">Reload</button>
-    <button onclick="localStorage.clear()">Clear Local Storage</button>
-  </div>
+<div class="tabs">
+  <button onclick="setTab('adventure')" id="tab-adventure">🎒 Adventure</button>
+  <button onclick="setTab('money')" id="tab-money">💰 Money</button>
+  <button onclick="setTab('places')" id="tab-places">📍 Places</button>
 </div>
 
 <script>
-(function(){
-  const statusEl  = document.getElementById("status");
-  const detailsEl = document.getElementById("details");
-  const uiEl      = document.getElementById("ui");
+/* ---------- Core ---------- */
+const screenEl = document.getElementById("screen");
+let tab = localStorage.getItem("tab") || "adventure";
 
-  function setOK(msg){
-    statusEl.className = "ok";
-    statusEl.textContent = msg;
-  }
-  function setBAD(msg){
-    statusEl.className = "bad";
-    statusEl.textContent = msg;
-  }
-  function log(line){
-    detailsEl.textContent += "\n" + line;
-  }
+function setTab(t){ tab=t; localStorage.setItem("tab",t); render(); }
+function setActiveTab(){
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+  const active=document.getElementById("tab-"+tab); if(active) active.classList.add("active");
+}
 
-  // Catch runtime errors
-  window.onerror = function(message, source, lineno, colno, error){
-    setBAD("JavaScript error (window.onerror)");
-    log("message: " + message);
-    log("source: " + source);
-    log("line: " + lineno + " col: " + colno);
-    if (error && error.stack) log("stack:\n" + error.stack);
-    return true;
-  };
+/* ---------- Adventure ---------- */
+const KEY_STICKERS="japan_stickers_v2";
+const missions={
+  tokyo:[{t:"Ride a super train",s:"🚅"},{t:"Eat ramen",s:"🍜"},{t:"Find a robot",s:"🤖"}],
+  kyoto:[{t:"Visit a temple",s:"⛩️"},{t:"Try a new snack",s:"🏮"}],
+  osaka:[{t:"Try sushi",s:"🍣"},{t:"Find a tall view",s:"🗻"}]
+};
+function getStickers(){ try{return JSON.parse(localStorage.getItem(KEY_STICKERS)||"[]")}catch{return[]} }
+function addSticker(st){ const a=getStickers(); a.push(st); localStorage.setItem(KEY_STICKERS,JSON.stringify(a)); render(); }
 
-  window.onunhandledrejection = function(e){
-    setBAD("Promise rejection (unhandled)");
-    log(String(e.reason && (e.reason.stack || e.reason) || e));
-  };
+/* ---------- Money ---------- */
+const KEY_MONEY="japan_money_v2";
+function defaultMoney(){return{
+  flights:{label:"✈️ Flights",saved:0,goal:3000},
+  hotels:{label:"🏨 Hotels",saved:0,goal:2500},
+  food:{label:"🍣 Food",saved:0,goal:1500},
+  activities:{label:"🎟️ Activities",saved:0,goal:1200}
+};}
+function getMoney(){ try{return JSON.parse(localStorage.getItem(KEY_MONEY))||defaultMoney()}catch{return defaultMoney()} }
+function saveMoney(m){ localStorage.setItem(KEY_MONEY,JSON.stringify(m)); }
+function addMoney(bucket,amount){
+  const m=getMoney(); if(!m[bucket])return;
+  m[bucket].saved=Math.max(0,m[bucket].saved+amount);
+  saveMoney(m); renderMoney(); setActiveTab();
+}
+function setGoal(bucket,newGoal){
+  const m=getMoney(); if(!m[bucket])return;
+  m[bucket].goal=Math.max(0,Number(newGoal)||0);
+  if(m[bucket].saved>m[bucket].goal) m[bucket].saved=m[bucket].goal;
+  saveMoney(m); renderMoney(); setActiveTab();
+}
 
-  // Prove JS is running
-  setOK("JS is running ✅");
-  detailsEl.textContent = "User agent:\n" + navigator.userAgent + "\n\nLocation:\n" + location.href;
+/* ---------- Places ---------- */
+const KEY_PLACES="japan_places_v1";
+function uid(){ return Math.random().toString(16).slice(2)+Date.now().toString(16); }
 
-  // Minimal render test
-  uiEl.innerHTML = `
-    <div style="font-weight:800;margin-bottom:8px;">Render test</div>
-    <div>If you can read this, DOM updates are working.</div>
-    <div style="margin-top:10px;">Time: <span id="t"></span></div>
+function seedPlacesIfEmpty(){
+  const list=getPlaces();
+  if(list.length) return;
+  const seeds=[
+    {title:"Tokyo baseball game",category:"Experience",area:"Tokyo",notes:"Pick a team/game that works with our dates.",emoji:"⚾"},
+    {title:"Tokyo Disney",category:"Experience",area:"Tokyo",notes:"Consider DisneySea vs Disneyland.",emoji:"🎢"},
+    {title:"Peace Memorial Museum",category:"Meaningful",area:"Hiroshima",notes:"Plan time for the park + memorials.",emoji:"🏛️"}
+  ];
+  const seeded=seeds.map(x=>({id:uid(),votes:0,must:false,created:Date.now(),...x}));
+  localStorage.setItem(KEY_PLACES,JSON.stringify(seeded));
+}
+
+function getPlaces(){
+  try { return JSON.parse(localStorage.getItem(KEY_PLACES)||"[]"); }
+  catch { return []; }
+}
+function savePlaces(list){
+  localStorage.setItem(KEY_PLACES, JSON.stringify(list));
+}
+
+let placesFilter = localStorage.getItem("placesFilter") || "all"; // all | must | top
+
+function setPlacesFilter(f){
+  placesFilter=f;
+  localStorage.setItem("placesFilter",f);
+  renderPlaces();
+}
+
+function addPlaceFromForm(){
+  const title = (document.getElementById("p_title").value||"").trim();
+  const category = document.getElementById("p_category").value;
+  const area = (document.getElementById("p_area").value||"").trim();
+  const notes = (document.getElementById("p_notes").value||"").trim();
+  const emoji = document.getElementById("p_emoji").value;
+
+  if(!title) { alert("Add a name for the idea."); return; }
+
+  const list=getPlaces();
+  list.unshift({id:uid(),title,category,area,notes,emoji,votes:0,must:false,created:Date.now()});
+  savePlaces(list);
+
+  document.getElementById("p_title").value="";
+  document.getElementById("p_area").value="";
+  document.getElementById("p_notes").value="";
+  renderPlaces();
+}
+
+function votePlace(id){
+  const list=getPlaces();
+  const item=list.find(x=>x.id===id); if(!item) return;
+  item.votes += 1;
+  savePlaces(list);
+  renderPlaces();
+}
+
+function toggleMust(id){
+  const list=getPlaces();
+  const item=list.find(x=>x.id===id); if(!item) return;
+  item.must = !item.must;
+  savePlaces(list);
+  renderPlaces();
+}
+
+function removePlace(id){
+  const list=getPlaces().filter(x=>x.id!==id);
+  savePlaces(list);
+  renderPlaces();
+}
+
+/* ---------- Render ---------- */
+function render(){
+  setActiveTab();
+  if(tab==="adventure") return renderAdventure();
+  if(tab==="money") return renderMoney();
+  if(tab==="places") return renderPlaces();
+  renderAdventure();
+}
+
+function renderAdventure(){
+  const s=getStickers();
+  screenEl.innerHTML=`
+    <h1>🇯🇵 Our Japan Adventure</h1>
+    <div class="small">Pick a city, do a mission, earn stickers.</div>
+    <div style="height:12px"></div>
+
+    ${Object.keys(missions).map(city=>`
+      <div class="card">
+        <strong>${city.toUpperCase()}</strong>
+        <div style="height:10px"></div>
+        ${missions[city].map(m=>`
+          <div class="mission">
+            <div>${m.t}</div>
+            <button class="primary" onclick="addSticker('${m.s}')">Earn ${m.s}</button>
+          </div>
+        `).join("")}
+      </div>
+    `).join("")}
+
+    <div class="card">
+      <strong>🎒 Sticker Book</strong>
+      <div style="height:10px"></div>
+      <div class="stickers">${s.length?s.join(" "):"No stickers yet"}</div>
+      <div class="small" style="margin-top:8px">Stickers earned: ${s.length}</div>
+    </div>
   `;
-  document.getElementById("t").textContent = new Date().toString();
+}
 
-  // Confirm localStorage works
-  try{
-    localStorage.setItem("ja_debug", "ok");
-    log("\nlocalStorage: ok");
-  }catch(err){
-    setBAD("localStorage blocked");
-    log("localStorage error: " + (err && err.message ? err.message : String(err)));
-  }
-})();
+function renderMoney(){
+  const m=getMoney();
+  const totalSaved=Object.values(m).reduce((a,x)=>a+x.saved,0);
+  const totalGoal=Object.values(m).reduce((a,x)=>a+x.goal,0);
+  screenEl.innerHTML=`
+    <h1>💰 Money Goals</h1>
+    <div class="small">Make progress together. Tap +$ to “power up” the trip.</div>
+    <div style="height:12px"></div>
+
+    <div class="card">
+      <strong>Family Total</strong>
+      <div style="height:10px"></div>
+      <progress value="${totalSaved}" max="${Math.max(1,totalGoal)}"></progress>
+      <div class="small" style="margin-top:8px">$${totalSaved} / $${totalGoal}</div>
+    </div>
+
+    ${Object.keys(m).map(key=>{
+      const b=m[key]; const max=Math.max(1,b.goal);
+      return `
+      <div class="card">
+        <strong>${b.label}</strong>
+        <div style="height:10px"></div>
+        <progress value="${b.saved}" max="${max}"></progress>
+        <div class="small" style="margin-top:8px">$${b.saved} / $${b.goal}</div>
+
+        <div class="row" style="margin-top:10px">
+          <button onclick="addMoney('${key}',25)">+ $25</button>
+          <button onclick="addMoney('${key}',100)">+ $100</button>
+          <button onclick="addMoney('${key}',-50)">- $50</button>
+        </div>
+
+        <div class="small" style="margin-top:10px">Goal:</div>
+        <input type="number" inputmode="numeric" value="${b.goal}"
+               oninput="setGoal('${key}', this.value)" />
+      </div>`;
+    }).join("")}
+  `;
+}
+
+function renderPlaces(){
+  seedPlacesIfEmpty();
+
+  let list=getPlaces();
+
+  // Apply filters
+  if(placesFilter==="must") list=list.filter(x=>x.must);
+  if(placesFilter==="top")  list=[...list].sort((a,b)=>b.votes-a.votes || b.created-a.created);
+  if(placesFilter==="all")  list=[...list].sort((a,b)=>(b.must-a.must) || (b.votes-a.votes) || (b.created-a.created));
+
+  screenEl.innerHTML=`
+    <h1>📍 Places & Experiences</h1>
+    <div class="small">Add ideas, then vote and mark must-dos as a family.</div>
+
+    <div class="card">
+      <strong>Add an idea</strong>
+      <div style="height:10px"></div>
+
+      <div class="row">
+        <input id="p_title" placeholder="Idea name (e.g., Tokyo Disney)" />
+        <select id="p_category">
+          <option>Experience</option>
+          <option>Site</option>
+          <option>Neighborhood</option>
+          <option>Food</option>
+          <option>Meaningful</option>
+        </select>
+      </div>
+
+      <div class="row" style="margin-top:8px">
+        <input id="p_area" placeholder="City/Area (Tokyo, Kyoto, Hiroshima…)" />
+        <select id="p_emoji">
+          <option>📍</option><option>🎢</option><option>⚾</option><option>🏛️</option>
+          <option>⛩️</option><option>🗻</option><option>🍜</option><option>🛍️</option>
+          <option>🚅</option><option>🌸</option>
+        </select>
+      </div>
+
+      <div style="margin-top:8px">
+        <textarea id="p_notes" placeholder="Notes (optional)"></textarea>
+      </div>
+
+      <button class="primary" style="margin-top:10px" onclick="addPlaceFromForm()">Add to our list</button>
+    </div>
+
+    <div class="card">
+      <strong>View</strong>
+      <div style="height:10px"></div>
+      <div class="pillbar">
+        <div class="pill ${placesFilter==='all'?'active':''}" onclick="setPlacesFilter('all')">All</div>
+        <div class="pill ${placesFilter==='must'?'active':''}" onclick="setPlacesFilter('must')">⭐ Must-do</div>
+        <div class="pill ${placesFilter==='top'?'active':''}" onclick="setPlacesFilter('top')">👍 Top voted</div>
+      </div>
+      <div class="small" style="margin-top:10px">${list.length} idea(s)</div>
+    </div>
+
+    ${list.map(x=>`
+      <div class="card">
+        <div class="idea">
+          <div class="idea-main">
+            <div class="idea-title">${x.emoji||"📍"} ${escapeHtml(x.title)} ${x.must? "⭐":""}</div>
+            <div class="idea-meta">
+              ${escapeHtml(x.category)} · ${escapeHtml(x.area||"")}${x.area? " · ":""}👍 ${x.votes}
+            </div>
+            ${x.notes? `<div class="small" style="margin-top:8px">${escapeHtml(x.notes)}</div>`:""}
+          </div>
+
+          <div class="idea-actions">
+            <button class="vote" onclick="votePlace('${x.id}')">👍 +1</button>
+            <button class="star" onclick="toggleMust('${x.id}')">${x.must?"Unstar":"⭐ Must"}</button>
+            <button onclick="removePlace('${x.id}')">🗑️</button>
+          </div>
+        </div>
+      </div>
+    `).join("")}
+  `;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+/* ---------- Boot ---------- */
+render();
 </script>
 </body>
 </html>
