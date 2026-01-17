@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Our Japan Adventure</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+  background: #0b1220;
+  color: #ffffff;
+}
+
+.app {
+  max-width: 520px;
+  margin: auto;
+  padding: 16px;
+}
+
+h1 {
+  margin: 0 0 8px;
+}
+
+.card {
+  background: rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.primary {
+  background: #7dd3fc;
+  color: #000;
+}
+
+.small {
+  opacity: 0.75;
+  font-size: 13px;
+}
+
+.mission {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  margin-bottom: 8px;
+}
+
+.stickers {
+  font-size: 32px;
+  line-height: 1.4;
+}
+
+select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <h1>🇯🇵 Our Japan Adventure</h1>
+  <div class="small">Pick a city, do a mission, earn stickers.</div>
+
+  <div class="card">
+    <strong>Choose a city</strong><br><br>
+    <select id="city" onchange="render()">
+      <option value="tokyo">Tokyo</option>
+      <option value="kyoto">Kyoto</option>
+      <option value="osaka">Osaka</option>
+    </select>
+  </div>
+
+  <div class="card" id="missions"></div>
+
+  <div class="card">
+    <strong>🎒 Sticker Book</strong><br><br>
+    <div class="stickers" id="stickers">No stickers yet.</div>
+    <div class="small" id="count"></div>
+    <button onclick="resetAll()">Reset (this device)</button>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  tokyo: [
+    { title: "Ride a super train", sticker: "🚅" },
+    { title: "Eat ramen noodles", sticker: "🍜" },
+    { title: "Find a robot", sticker: "🤖" }
+  ],
+  kyoto: [
+    { title: "Visit a temple", sticker: "⛩️" },
+    { title: "Try a new snack", sticker: "🏮" }
+  ],
+  osaka: [
+    { title: "Try sushi", sticker: "🍣" },
+    { title: "Find a tall view", sticker: "🗻" }
+  ]
+};
+
+const KEY = "japan_adventure_v1";
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+  catch { return []; }
+}
+
+function save(arr) {
+  localStorage.setItem(KEY, JSON.stringify(arr));
+}
+
+function earn(sticker) {
+  const s = load();
+  s.push(sticker);
+  save(s);
+  renderStickers();
+}
+
+function render() {
+  const city = document.getElementById("city").value;
+  const missions = DATA[city];
+
+  document.getElementById("missions").innerHTML =
+    "<strong>Missions</strong><br><br>" +
+    missions.map(m =>
+      `<div class="mission">
+        <div>${m.title}</div>
+        <button class="primary" onclick="earn('${m.sticker}')">Earn ${m.sticker}</button>
+      </div>`
+    ).join("");
+
+  renderStickers();
+}
+
+function renderStickers() {
+  const s = load();
+  document.getElementById("stickers").textContent =
+    s.length ? s.join(" ") : "No stickers yet.";
+  document.getElementById("count").textContent =
+    "Stickers earned: " + s.length;
+}
+
+function resetAll() {
+  localStorage.removeItem(KEY);
+  renderStickers();
+}
+
+render();
+</script>
+</body>
+</html>
