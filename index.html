@@ -6,36 +6,259 @@
 <title>Our Japan Adventure</title>
 
 <style>
-body{margin:0;font-family:-apple-system,system-ui;background:#0b1220;color:#fff}
-.app{max-width:620px;margin:auto;padding:16px 16px 90px}
-h1{margin:0 0 6px;font-size:32px}
-.card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px;margin:12px 0}
-.small{opacity:.75;font-size:13px}
-.tabs{position:fixed;bottom:0;left:0;right:0;background:#111827;display:flex;border-top:1px solid rgba(255,255,255,.1)}
-.tabs button{flex:1;background:none;color:#fff;padding:12px;font-weight:800;opacity:.75;border:none}
-.tabs button.active{background:#1f2937;opacity:1}
-button,input,select,textarea{padding:10px;border-radius:12px;border:none;font-size:15px}
-.primary{background:#7dd3fc;color:#000;font-weight:800}
-.row{display:flex;gap:8px;align-items:center}
+/* ---------- Base ---------- */
+:root{
+  --bg:#0b1220;
+  --card: rgba(255,255,255,.08);
+  --card2: rgba(255,255,255,.10);
+  --line: rgba(255,255,255,.12);
+  --text:#fff;
+  --muted: rgba(255,255,255,.72);
+  --accent:#7dd3fc;
+  --shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ---------- Themed backgrounds per page ---------- */
+body.theme-adventure{
+  background:
+    radial-gradient(900px 500px at 20% 10%, rgba(125,211,252,.18), transparent 60%),
+    radial-gradient(700px 400px at 80% 20%, rgba(167,243,208,.12), transparent 55%),
+    radial-gradient(900px 500px at 50% 100%, rgba(250,204,21,.08), transparent 60%),
+    #08101f;
+}
+body.theme-money{
+  background:
+    radial-gradient(900px 500px at 30% 10%, rgba(250,204,21,.18), transparent 60%),
+    radial-gradient(700px 400px at 75% 30%, rgba(34,197,94,.12), transparent 55%),
+    radial-gradient(900px 500px at 50% 100%, rgba(125,211,252,.08), transparent 60%),
+    #07131b;
+}
+body.theme-places{
+  background:
+    radial-gradient(900px 500px at 20% 10%, rgba(244,114,182,.15), transparent 60%),
+    radial-gradient(700px 400px at 80% 25%, rgba(125,211,252,.12), transparent 55%),
+    radial-gradient(900px 500px at 50% 100%, rgba(167,243,208,.10), transparent 60%),
+    #091020;
+}
+
+/* ---------- Layout ---------- */
+.app{
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 16px 16px 96px;
+}
+
+.header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom: 10px;
+}
+
+.h-title{
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: .2px;
+  line-height:1.05;
+  margin:0;
+}
+.h-sub{color:var(--muted); margin-top:6px; font-size:13px}
+
+.card{
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+  margin: 12px 0;
+}
+
+.card.soft{ background: rgba(255,255,255,.06); box-shadow:none; }
+
+.row{display:flex; gap:10px; align-items:center}
 .row > *{flex:1}
-progress{width:100%;height:16px}
+.stack{display:flex; flex-direction:column; gap:10px}
 
-.mission{display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(255,255,255,.08);padding:10px;border-radius:12px;margin-bottom:8px}
-.stickers{font-size:32px;line-height:1.4}
+.small{color:var(--muted); font-size:13px}
+.mini{color:var(--muted); font-size:12px}
 
-.pillbar{display:flex;gap:8px;flex-wrap:wrap}
-.pill{padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-weight:700}
-.pill.active{background:#1f2937}
+/* ---------- Controls ---------- */
+button, input, select, textarea{
+  border:none;
+  border-radius: 14px;
+  padding: 12px 12px;
+  font-size: 15px;
+}
 
-.idea{display:flex;gap:10px;align-items:flex-start}
-.idea-main{flex:1}
-.idea-title{font-weight:900;font-size:16px}
-.idea-meta{opacity:.75;font-size:12px;margin-top:2px}
-.idea-actions{display:flex;flex-direction:column;gap:8px}
-.idea-actions button{padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.10);color:#fff;font-weight:900}
-.idea-actions button.star{background:rgba(253,224,71,.18)}
-.idea-actions button.vote{background:rgba(125,211,252,.18)}
-textarea{min-height:70px}
+button{
+  font-weight: 900;
+  background: rgba(255,255,255,.12);
+  color: var(--text);
+}
+
+button.primary{ background: var(--accent); color:#00111a; }
+button.danger{ background: rgba(248,113,113,.20); }
+button.gold{ background: rgba(250,204,21,.22); }
+button.green{ background: rgba(34,197,94,.20); }
+button.ghost{ background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
+button:active{ transform: scale(.99); }
+
+input, select, textarea{
+  background: rgba(255,255,255,.10);
+  color: var(--text);
+  outline: none;
+}
+input::placeholder, textarea::placeholder{ color: rgba(255,255,255,.55); }
+
+textarea{ min-height: 70px; resize: vertical; }
+
+/* ---------- Tabs ---------- */
+.tabs{
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(17,24,39,.92);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255,255,255,.10);
+}
+.tabbar{
+  max-width: 680px;
+  margin: 0 auto;
+  display:flex;
+  gap:10px;
+}
+.tab{
+  flex:1;
+  padding: 12px 10px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  opacity: .80;
+}
+.tab.active{
+  background: rgba(255,255,255,.12);
+  opacity: 1;
+}
+.tab .t1{font-size:16px; font-weight:1000}
+.tab .t2{font-size:11px; opacity:.8; margin-top:2px}
+
+/* ---------- Adventure ---------- */
+.mapGrid{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.mission{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding: 10px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+}
+.mission .label{ font-weight: 900 }
+.badge{
+  display:inline-flex;
+  gap:8px;
+  align-items:center;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+}
+.stickerBook{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  padding-top: 6px;
+}
+.sticker{
+  font-size: 34px;
+  line-height: 1;
+  padding: 10px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+  cursor: pointer;
+  user-select: none;
+}
+.sticker:active{ transform: scale(.98); }
+
+/* ---------- Money ---------- */
+.progressWrap{ display:flex; flex-direction:column; gap:8px; }
+progress{ width:100%; height: 18px; border-radius: 999px; overflow:hidden; }
+progress::-webkit-progress-bar{ background: rgba(255,255,255,.10); border-radius: 999px; }
+progress::-webkit-progress-value{ background: rgba(250,204,21,.70); border-radius: 999px; }
+.moneyGrid{ display:grid; grid-template-columns: 1fr; gap: 10px; }
+.moneyTitle{ font-weight: 1000; font-size: 18px; display:flex; gap:10px; align-items:center; }
+.moneySub{ font-size:12px; color:var(--muted); }
+.pillRow{ display:flex; gap:10px; flex-wrap:wrap; }
+.pill{
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+  font-weight: 900;
+}
+
+/* ---------- Places ---------- */
+.pillbar{ display:flex; gap:10px; flex-wrap:wrap; }
+.pillbtn{
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+  font-weight: 1000;
+}
+.pillbtn.active{ background: rgba(255,255,255,.14); }
+.idea{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+}
+.ideaMain{ flex:1; }
+.ideaTitle{ font-weight:1000; font-size: 16px; }
+.ideaMeta{ font-size: 12px; color: var(--muted); margin-top:4px; }
+.ideaNotes{ margin-top: 8px; font-size: 13px; color: rgba(255,255,255,.86); }
+.ideaActions{ display:flex; flex-direction:column; gap:8px; }
+.ideaActions button{ padding: 10px 10px; border-radius: 14px; }
+
+/* ---------- Toast ---------- */
+.toast{
+  position: fixed;
+  left: 50%;
+  bottom: 92px;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,.55);
+  border: 1px solid rgba(255,255,255,.12);
+  color: white;
+  padding: 10px 12px;
+  border-radius: 999px;
+  font-weight: 900;
+  opacity: 0;
+  pointer-events:none;
+  transition: opacity .25s ease;
+}
+.toast.show{ opacity: 1; }
+
+/* ---------- Tiny sparkle animation ---------- */
+@keyframes pop{
+  0%{ transform: scale(.6); opacity: 0;}
+  100%{ transform: scale(1); opacity: 1;}
+}
+.pop{ animation: pop .18s ease-out; }
 </style>
 </head>
 
@@ -45,86 +268,217 @@ textarea{min-height:70px}
 </div>
 
 <div class="tabs">
-  <button onclick="setTab('adventure')" id="tab-adventure">🎒 Adventure</button>
-  <button onclick="setTab('money')" id="tab-money">💰 Money</button>
-  <button onclick="setTab('places')" id="tab-places">📍 Places</button>
+  <div class="tabbar">
+    <button class="tab" id="tab-adventure" onclick="setTab('adventure')">
+      <div class="t1">🎒 Adventure</div><div class="t2">Missions & stickers</div>
+    </button>
+    <button class="tab" id="tab-money" onclick="setTab('money')">
+      <div class="t1">💰 Money</div><div class="t2">Treasure goals</div>
+    </button>
+    <button class="tab" id="tab-places" onclick="setTab('places')">
+      <div class="t1">📍 Places</div><div class="t2">Ideas & votes</div>
+    </button>
+  </div>
 </div>
 
+<div class="toast" id="toast">Saved!</div>
+
 <script>
-/* ---------- Core ---------- */
+/* -------------------- Storage keys -------------------- */
+const KEY_TAB      = "ja_tab_v3";
+const KEY_STICKERS = "ja_stickers_v3";
+const KEY_MONEY    = "ja_money_v3";
+const KEY_MHIST    = "ja_money_hist_v3";
+const KEY_PLACES   = "ja_places_v3";
+const KEY_PFILTER  = "ja_places_filter_v3";
+
 const screenEl = document.getElementById("screen");
-let tab = localStorage.getItem("tab") || "adventure";
+const toastEl  = document.getElementById("toast");
 
-function setTab(t){ tab=t; localStorage.setItem("tab",t); render(); }
+let tab = localStorage.getItem(KEY_TAB) || "adventure";
+let placesFilter = localStorage.getItem(KEY_PFILTER) || "all"; // all | must | top
+
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  setTimeout(()=>toastEl.classList.remove("show"), 900);
+}
+
+/* -------------------- Theming -------------------- */
+function applyTheme(){
+  document.body.classList.remove("theme-adventure","theme-money","theme-places");
+  document.body.classList.add("theme-"+tab);
+}
+
+/* -------------------- Tabs -------------------- */
 function setActiveTab(){
-  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
-  const active=document.getElementById("tab-"+tab); if(active) active.classList.add("active");
+  ["adventure","money","places"].forEach(t=>{
+    document.getElementById("tab-"+t).classList.toggle("active", t===tab);
+  });
+}
+function setTab(t){
+  tab = t;
+  localStorage.setItem(KEY_TAB, t);
+  render();
 }
 
-/* ---------- Adventure ---------- */
-const KEY_STICKERS="japan_stickers_v2";
-const missions={
-  tokyo:[{t:"Ride a super train",s:"🚅"},{t:"Eat ramen",s:"🍜"},{t:"Find a robot",s:"🤖"}],
-  kyoto:[{t:"Visit a temple",s:"⛩️"},{t:"Try a new snack",s:"🏮"}],
-  osaka:[{t:"Try sushi",s:"🍣"},{t:"Find a tall view",s:"🗻"}]
+/* -------------------- Adventure data -------------------- */
+const missions = {
+  tokyo:[
+    {t:"Ride a super train", s:"🚅"},
+    {t:"Eat ramen", s:"🍜"},
+    {t:"Find a robot", s:"🤖"},
+    {t:"See the big city lights", s:"🌃"}
+  ],
+  kyoto:[
+    {t:"Visit a temple", s:"⛩️"},
+    {t:"See a bamboo forest", s:"🎋"},
+    {t:"Try a new snack", s:"🏮"}
+  ],
+  osaka:[
+    {t:"Try sushi", s:"🍣"},
+    {t:"Find a tall view", s:"🗻"},
+    {t:"Play an arcade game", s:"🕹️"}
+  ],
+  hiroshima:[
+    {t:"Learn a history lesson", s:"🏛️"},
+    {t:"Make a peace wish", s:"🕊️"}
+  ]
 };
-function getStickers(){ try{return JSON.parse(localStorage.getItem(KEY_STICKERS)||"[]")}catch{return[]} }
-function addSticker(st){ const a=getStickers(); a.push(st); localStorage.setItem(KEY_STICKERS,JSON.stringify(a)); render(); }
 
-/* ---------- Money ---------- */
-const KEY_MONEY="japan_money_v2";
-function defaultMoney(){return{
-  flights:{label:"✈️ Flights",saved:0,goal:3000},
-  hotels:{label:"🏨 Hotels",saved:0,goal:2500},
-  food:{label:"🍣 Food",saved:0,goal:1500},
-  activities:{label:"🎟️ Activities",saved:0,goal:1200}
-};}
-function getMoney(){ try{return JSON.parse(localStorage.getItem(KEY_MONEY))||defaultMoney()}catch{return defaultMoney()} }
-function saveMoney(m){ localStorage.setItem(KEY_MONEY,JSON.stringify(m)); }
-function addMoney(bucket,amount){
-  const m=getMoney(); if(!m[bucket])return;
-  m[bucket].saved=Math.max(0,m[bucket].saved+amount);
-  saveMoney(m); renderMoney(); setActiveTab();
+function getStickers(){
+  try{ return JSON.parse(localStorage.getItem(KEY_STICKERS) || "[]"); }
+  catch{ return []; }
 }
-function setGoal(bucket,newGoal){
-  const m=getMoney(); if(!m[bucket])return;
-  m[bucket].goal=Math.max(0,Number(newGoal)||0);
-  if(m[bucket].saved>m[bucket].goal) m[bucket].saved=m[bucket].goal;
-  saveMoney(m); renderMoney(); setActiveTab();
+function saveStickers(arr){
+  localStorage.setItem(KEY_STICKERS, JSON.stringify(arr));
+}
+function addSticker(st){
+  const arr = getStickers();
+  arr.push(st);
+  saveStickers(arr);
+  toast("Sticker earned!");
+  renderAdventure(true);
+}
+function removeStickerAt(idx){
+  const arr = getStickers();
+  if(idx<0 || idx>=arr.length) return;
+  const removed = arr.splice(idx,1);
+  saveStickers(arr);
+  toast("Removed " + (removed[0]||"sticker"));
+  renderAdventure();
+}
+function removeLastSticker(){
+  const arr = getStickers();
+  if(!arr.length) return;
+  const st = arr.pop();
+  saveStickers(arr);
+  toast("Removed " + st);
+  renderAdventure();
+}
+function clearStickers(){
+  saveStickers([]);
+  toast("Sticker book cleared");
+  renderAdventure();
 }
 
-/* ---------- Places ---------- */
-const KEY_PLACES="japan_places_v1";
-function uid(){ return Math.random().toString(16).slice(2)+Date.now().toString(16); }
+/* -------------------- Money data -------------------- */
+function defaultMoney(){
+  return {
+    flights:    {label:"✈️ Flights",     saved:0, goal:3000},
+    hotels:    {label:"🏨 Hotels",      saved:0, goal:2500},
+    food:      {label:"🍣 Food",        saved:0, goal:1500},
+    activities:{label:"🎟️ Activities", saved:0, goal:1200}
+  };
+}
+function getMoney(){
+  try{ return JSON.parse(localStorage.getItem(KEY_MONEY)) || defaultMoney(); }
+  catch{ return defaultMoney(); }
+}
+function saveMoney(m){
+  localStorage.setItem(KEY_MONEY, JSON.stringify(m));
+}
+function getMoneyHist(){
+  try{ return JSON.parse(localStorage.getItem(KEY_MHIST) || "[]"); }
+  catch{ return []; }
+}
+function pushMoneyHist(entry){
+  const h = getMoneyHist();
+  h.unshift(entry);
+  if(h.length>30) h.pop();
+  localStorage.setItem(KEY_MHIST, JSON.stringify(h));
+}
+function addMoney(bucket, amount){
+  const m = getMoney();
+  if(!m[bucket]) return;
+  const before = m[bucket].saved;
+  m[bucket].saved = Math.max(0, before + amount);
+  saveMoney(m);
+  pushMoneyHist({t:Date.now(), bucket, before, after:m[bucket].saved});
+  toast((amount>=0?"+$":"-$") + Math.abs(amount));
+  renderMoney(true);
+}
+function setSaved(bucket, newSaved){
+  const m = getMoney();
+  if(!m[bucket]) return;
+  const before = m[bucket].saved;
+  const val = Math.max(0, Number(newSaved)||0);
+  m[bucket].saved = val;
+  saveMoney(m);
+  pushMoneyHist({t:Date.now(), bucket, before, after:val});
+  toast("Updated saved");
+  renderMoney();
+}
+function setGoal(bucket, newGoal){
+  const m = getMoney();
+  if(!m[bucket]) return;
+  const g = Math.max(0, Number(newGoal)||0);
+  m[bucket].goal = g;
+  if(m[bucket].saved > g) m[bucket].saved = g;
+  saveMoney(m);
+  toast("Goal set");
+  renderMoney();
+}
+function undoMoney(){
+  const h = getMoneyHist();
+  if(!h.length){ toast("Nothing to undo"); return; }
+  const last = h.shift();
+  localStorage.setItem(KEY_MHIST, JSON.stringify(h));
+  const m = getMoney();
+  if(m[last.bucket]){
+    m[last.bucket].saved = last.before;
+    saveMoney(m);
+    toast("Undid last change");
+    renderMoney();
+  }
+}
+
+/* -------------------- Places data -------------------- */
+function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
 
 function seedPlacesIfEmpty(){
-  const list=getPlaces();
+  const list = getPlaces();
   if(list.length) return;
-  const seeds=[
-    {title:"Tokyo baseball game",category:"Experience",area:"Tokyo",notes:"Pick a team/game that works with our dates.",emoji:"⚾"},
-    {title:"Tokyo Disney",category:"Experience",area:"Tokyo",notes:"Consider DisneySea vs Disneyland.",emoji:"🎢"},
-    {title:"Peace Memorial Museum",category:"Meaningful",area:"Hiroshima",notes:"Plan time for the park + memorials.",emoji:"🏛️"}
+  const seeds = [
+    {title:"Tokyo baseball game", category:"Experience", area:"Tokyo", notes:"Pick a game that fits our dates.", emoji:"⚾"},
+    {title:"Tokyo Disney (or DisneySea)", category:"Experience", area:"Tokyo", notes:"Decide which park!", emoji:"🎢"},
+    {title:"Peace Memorial Museum", category:"Meaningful", area:"Hiroshima", notes:"Plan time for the park too.", emoji:"🏛️"}
   ];
-  const seeded=seeds.map(x=>({id:uid(),votes:0,must:false,created:Date.now(),...x}));
-  localStorage.setItem(KEY_PLACES,JSON.stringify(seeded));
+  const seeded = seeds.map(x=>({id:uid(),votes:0,must:false,created:Date.now(),...x}));
+  localStorage.setItem(KEY_PLACES, JSON.stringify(seeded));
 }
-
 function getPlaces(){
-  try { return JSON.parse(localStorage.getItem(KEY_PLACES)||"[]"); }
-  catch { return []; }
+  try{ return JSON.parse(localStorage.getItem(KEY_PLACES) || "[]"); }
+  catch{ return []; }
 }
 function savePlaces(list){
   localStorage.setItem(KEY_PLACES, JSON.stringify(list));
 }
-
-let placesFilter = localStorage.getItem("placesFilter") || "all"; // all | must | top
-
 function setPlacesFilter(f){
-  placesFilter=f;
-  localStorage.setItem("placesFilter",f);
+  placesFilter = f;
+  localStorage.setItem(KEY_PFILTER, f);
   renderPlaces();
 }
-
 function addPlaceFromForm(){
   const title = (document.getElementById("p_title").value||"").trim();
   const category = document.getElementById("p_category").value;
@@ -132,133 +486,218 @@ function addPlaceFromForm(){
   const notes = (document.getElementById("p_notes").value||"").trim();
   const emoji = document.getElementById("p_emoji").value;
 
-  if(!title) { alert("Add a name for the idea."); return; }
+  if(!title){ alert("Add a name for the idea."); return; }
 
-  const list=getPlaces();
+  const list = getPlaces();
   list.unshift({id:uid(),title,category,area,notes,emoji,votes:0,must:false,created:Date.now()});
   savePlaces(list);
-
+  toast("Added idea!");
   document.getElementById("p_title").value="";
   document.getElementById("p_area").value="";
   document.getElementById("p_notes").value="";
-  renderPlaces();
+  renderPlaces(true);
 }
-
 function votePlace(id){
   const list=getPlaces();
   const item=list.find(x=>x.id===id); if(!item) return;
   item.votes += 1;
   savePlaces(list);
-  renderPlaces();
+  toast("Voted!");
+  renderPlaces(true);
 }
-
 function toggleMust(id){
   const list=getPlaces();
   const item=list.find(x=>x.id===id); if(!item) return;
   item.must = !item.must;
   savePlaces(list);
+  toast(item.must ? "Must-do!" : "Unstarred");
   renderPlaces();
 }
-
 function removePlace(id){
   const list=getPlaces().filter(x=>x.id!==id);
   savePlaces(list);
+  toast("Deleted");
   renderPlaces();
 }
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
 
-/* ---------- Render ---------- */
+/* -------------------- Renderers -------------------- */
 function render(){
+  applyTheme();
   setActiveTab();
   if(tab==="adventure") return renderAdventure();
   if(tab==="money") return renderMoney();
   if(tab==="places") return renderPlaces();
-  renderAdventure();
 }
 
-function renderAdventure(){
-  const s=getStickers();
-  screenEl.innerHTML=`
-    <h1>🇯🇵 Our Japan Adventure</h1>
-    <div class="small">Pick a city, do a mission, earn stickers.</div>
-    <div style="height:12px"></div>
+function renderAdventure(animate=false){
+  const s = getStickers();
+  const total = s.length;
 
-    ${Object.keys(missions).map(city=>`
-      <div class="card">
-        <strong>${city.toUpperCase()}</strong>
-        <div style="height:10px"></div>
-        ${missions[city].map(m=>`
-          <div class="mission">
-            <div>${m.t}</div>
-            <button class="primary" onclick="addSticker('${m.s}')">Earn ${m.s}</button>
-          </div>
-        `).join("")}
+  screenEl.innerHTML = `
+    <div class="header">
+      <div>
+        <h1 class="h-title">🗺️ Adventure Map</h1>
+        <div class="h-sub">Do missions. Earn stickers. Tap a sticker to remove it.</div>
       </div>
-    `).join("")}
-
-    <div class="card">
-      <strong>🎒 Sticker Book</strong>
-      <div style="height:10px"></div>
-      <div class="stickers">${s.length?s.join(" "):"No stickers yet"}</div>
-      <div class="small" style="margin-top:8px">Stickers earned: ${s.length}</div>
-    </div>
-  `;
-}
-
-function renderMoney(){
-  const m=getMoney();
-  const totalSaved=Object.values(m).reduce((a,x)=>a+x.saved,0);
-  const totalGoal=Object.values(m).reduce((a,x)=>a+x.goal,0);
-  screenEl.innerHTML=`
-    <h1>💰 Money Goals</h1>
-    <div class="small">Make progress together. Tap +$ to “power up” the trip.</div>
-    <div style="height:12px"></div>
-
-    <div class="card">
-      <strong>Family Total</strong>
-      <div style="height:10px"></div>
-      <progress value="${totalSaved}" max="${Math.max(1,totalGoal)}"></progress>
-      <div class="small" style="margin-top:8px">$${totalSaved} / $${totalGoal}</div>
+      <div class="badge">
+        <div style="font-size:18px">🎒</div>
+        <div><div style="font-weight:1000">${total}</div><div class="mini">stickers</div></div>
+      </div>
     </div>
 
-    ${Object.keys(m).map(key=>{
-      const b=m[key]; const max=Math.max(1,b.goal);
-      return `
-      <div class="card">
-        <strong>${b.label}</strong>
-        <div style="height:10px"></div>
-        <progress value="${b.saved}" max="${max}"></progress>
-        <div class="small" style="margin-top:8px">$${b.saved} / $${b.goal}</div>
+    <div class="card">
+      <div class="row">
+        <div class="pill">🧒 Kid tip: pick a mission and press “Earn”</div>
+        <div class="pill">👨‍👩‍👦 Grown-ups: use Money + Places</div>
+      </div>
+    </div>
 
-        <div class="row" style="margin-top:10px">
-          <button onclick="addMoney('${key}',25)">+ $25</button>
-          <button onclick="addMoney('${key}',100)">+ $100</button>
-          <button onclick="addMoney('${key}',-50)">- $50</button>
+    <div class="mapGrid">
+      ${Object.keys(missions).map(city=>`
+        <div class="card">
+          <div class="moneyTitle">${cityEmoji(city)} ${cityName(city)}</div>
+          <div class="small">Complete a mission to earn a sticker.</div>
+          <div style="height:10px"></div>
+          ${missions[city].map(m=>`
+            <div class="mission">
+              <div class="label">${m.t}</div>
+              <button class="primary" onclick="addSticker('${m.s}')">Earn ${m.s}</button>
+            </div>
+          `).join("")}
         </div>
+      `).join("")}
+    </div>
 
-        <div class="small" style="margin-top:10px">Goal:</div>
-        <input type="number" inputmode="numeric" value="${b.goal}"
-               oninput="setGoal('${key}', this.value)" />
-      </div>`;
-    }).join("")}
+    <div class="card">
+      <div class="row" style="align-items:flex-start">
+        <div style="flex:2">
+          <div class="moneyTitle">🎒 Sticker Book</div>
+          <div class="small">Tap any sticker to delete it.</div>
+        </div>
+        <div style="display:flex; gap:10px; flex:1; flex-direction:column">
+          <button class="ghost" onclick="removeLastSticker()">Remove last</button>
+          <button class="danger" onclick="clearStickers()">Clear all</button>
+        </div>
+      </div>
+
+      <div class="stickerBook ${animate?'pop':''}" style="margin-top:10px">
+        ${s.length ? s.map((st,idx)=>`
+          <div class="sticker" onclick="removeStickerAt(${idx})" title="Tap to delete">${st}</div>
+        `).join("") : `<div class="small">No stickers yet. Earn your first one above.</div>`}
+      </div>
+    </div>
   `;
 }
 
-function renderPlaces(){
+function renderMoney(animate=false){
+  const m = getMoney();
+  const buckets = Object.keys(m);
+
+  const totalSaved = buckets.reduce((a,k)=>a+m[k].saved,0);
+  const totalGoal  = buckets.reduce((a,k)=>a+m[k].goal,0);
+
+  screenEl.innerHTML = `
+    <div class="header">
+      <div>
+        <h1 class="h-title">🏦 Treasure Vault</h1>
+        <div class="h-sub">Save together. Use -$ buttons or Undo to remove money.</div>
+      </div>
+      <div class="badge">
+        <div style="font-size:18px">💰</div>
+        <div>
+          <div style="font-weight:1000">$${totalSaved}</div>
+          <div class="mini">saved</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card ${animate?'pop':''}">
+      <div class="moneyTitle">🧭 Family Total</div>
+      <div class="moneySub">$${totalSaved} / $${totalGoal}</div>
+      <div style="height:10px"></div>
+      <div class="progressWrap">
+        <progress value="${totalSaved}" max="${Math.max(1,totalGoal)}"></progress>
+        <div class="pillRow">
+          <div class="pill">Goal pace: adjust goals below</div>
+          <div class="pill">Undo works across buckets</div>
+        </div>
+      </div>
+      <div style="height:10px"></div>
+      <button class="gold" onclick="undoMoney()">↩️ Undo last change</button>
+    </div>
+
+    <div class="moneyGrid">
+      ${buckets.map(key=>{
+        const b = m[key];
+        const max = Math.max(1,b.goal);
+        return `
+          <div class="card">
+            <div class="moneyTitle">${b.label}</div>
+            <div class="moneySub">$${b.saved} / $${b.goal}</div>
+            <div style="height:10px"></div>
+            <progress value="${b.saved}" max="${max}"></progress>
+
+            <div class="row" style="margin-top:10px">
+              <button class="green" onclick="addMoney('${key}',25)">+ $25</button>
+              <button class="green" onclick="addMoney('${key}',100)">+ $100</button>
+              <button class="danger" onclick="addMoney('${key}',-50)">- $50</button>
+            </div>
+
+            <div class="row" style="margin-top:10px">
+              <button onclick="addMoney('${key}',-25)">- $25</button>
+              <button onclick="addMoney('${key}',-100)">- $100</button>
+              <button class="gold" onclick="addMoney('${key}',500)">+ $500</button>
+            </div>
+
+            <div class="row" style="margin-top:10px">
+              <div class="stack">
+                <div class="mini">Saved (set exact):</div>
+                <input type="number" inputmode="numeric" value="${b.saved}" oninput="setSaved('${key}', this.value)" />
+              </div>
+              <div class="stack">
+                <div class="mini">Goal:</div>
+                <input type="number" inputmode="numeric" value="${b.goal}" oninput="setGoal('${key}', this.value)" />
+              </div>
+            </div>
+
+            <div class="small" style="margin-top:10px">
+              Tip: If you fat-finger an amount, use Undo.
+            </div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function renderPlaces(animate=false){
   seedPlacesIfEmpty();
+  let list = getPlaces();
 
-  let list=getPlaces();
+  if(placesFilter==="must") list = list.filter(x=>x.must);
+  if(placesFilter==="top")  list = [...list].sort((a,b)=>b.votes-a.votes || b.created-a.created);
+  if(placesFilter==="all")  list = [...list].sort((a,b)=>(b.must-a.must) || (b.votes-a.votes) || (b.created-a.created));
 
-  // Apply filters
-  if(placesFilter==="must") list=list.filter(x=>x.must);
-  if(placesFilter==="top")  list=[...list].sort((a,b)=>b.votes-a.votes || b.created-a.created);
-  if(placesFilter==="all")  list=[...list].sort((a,b)=>(b.must-a.must) || (b.votes-a.votes) || (b.created-a.created));
+  screenEl.innerHTML = `
+    <div class="header">
+      <div>
+        <h1 class="h-title">📮 Postcard Wall</h1>
+        <div class="h-sub">Collect ideas, vote as a family, star must-dos.</div>
+      </div>
+      <div class="badge">
+        <div style="font-size:18px">📍</div>
+        <div><div style="font-weight:1000">${list.length}</div><div class="mini">ideas</div></div>
+      </div>
+    </div>
 
-  screenEl.innerHTML=`
-    <h1>📍 Places & Experiences</h1>
-    <div class="small">Add ideas, then vote and mark must-dos as a family.</div>
-
-    <div class="card">
-      <strong>Add an idea</strong>
+    <div class="card ${animate?'pop':''}">
+      <div class="moneyTitle">Add a postcard</div>
+      <div class="small">Kid-friendly: add an emoji + vote it up!</div>
       <div style="height:10px"></div>
 
       <div class="row">
@@ -272,48 +711,43 @@ function renderPlaces(){
         </select>
       </div>
 
-      <div class="row" style="margin-top:8px">
+      <div class="row" style="margin-top:10px">
         <input id="p_area" placeholder="City/Area (Tokyo, Kyoto, Hiroshima…)" />
         <select id="p_emoji">
           <option>📍</option><option>🎢</option><option>⚾</option><option>🏛️</option>
           <option>⛩️</option><option>🗻</option><option>🍜</option><option>🛍️</option>
-          <option>🚅</option><option>🌸</option>
+          <option>🚅</option><option>🌸</option><option>🕊️</option><option>🧸</option>
         </select>
       </div>
 
-      <div style="margin-top:8px">
+      <div style="margin-top:10px">
         <textarea id="p_notes" placeholder="Notes (optional)"></textarea>
       </div>
 
-      <button class="primary" style="margin-top:10px" onclick="addPlaceFromForm()">Add to our list</button>
+      <button class="primary" style="margin-top:10px" onclick="addPlaceFromForm()">Add idea</button>
     </div>
 
-    <div class="card">
-      <strong>View</strong>
-      <div style="height:10px"></div>
+    <div class="card soft">
       <div class="pillbar">
-        <div class="pill ${placesFilter==='all'?'active':''}" onclick="setPlacesFilter('all')">All</div>
-        <div class="pill ${placesFilter==='must'?'active':''}" onclick="setPlacesFilter('must')">⭐ Must-do</div>
-        <div class="pill ${placesFilter==='top'?'active':''}" onclick="setPlacesFilter('top')">👍 Top voted</div>
+        <button class="pillbtn ${placesFilter==='all'?'active':''}" onclick="setPlacesFilter('all')">All</button>
+        <button class="pillbtn ${placesFilter==='must'?'active':''}" onclick="setPlacesFilter('must')">⭐ Must-do</button>
+        <button class="pillbtn ${placesFilter==='top'?'active':''}" onclick="setPlacesFilter('top')">👍 Top voted</button>
       </div>
-      <div class="small" style="margin-top:10px">${list.length} idea(s)</div>
+      <div class="mini" style="margin-top:10px">Sorting: Must-do first, then votes, then newest.</div>
     </div>
 
     ${list.map(x=>`
       <div class="card">
         <div class="idea">
-          <div class="idea-main">
-            <div class="idea-title">${x.emoji||"📍"} ${escapeHtml(x.title)} ${x.must? "⭐":""}</div>
-            <div class="idea-meta">
-              ${escapeHtml(x.category)} · ${escapeHtml(x.area||"")}${x.area? " · ":""}👍 ${x.votes}
-            </div>
-            ${x.notes? `<div class="small" style="margin-top:8px">${escapeHtml(x.notes)}</div>`:""}
+          <div class="ideaMain">
+            <div class="ideaTitle">${x.emoji||"📍"} ${escapeHtml(x.title)} ${x.must ? "⭐" : ""}</div>
+            <div class="ideaMeta">${escapeHtml(x.category)} · ${escapeHtml(x.area||"")} · 👍 ${x.votes}</div>
+            ${x.notes ? `<div class="ideaNotes">${escapeHtml(x.notes)}</div>` : ``}
           </div>
-
-          <div class="idea-actions">
-            <button class="vote" onclick="votePlace('${x.id}')">👍 +1</button>
-            <button class="star" onclick="toggleMust('${x.id}')">${x.must?"Unstar":"⭐ Must"}</button>
-            <button onclick="removePlace('${x.id}')">🗑️</button>
+          <div class="ideaActions">
+            <button class="primary" onclick="votePlace('${x.id}')">👍 +1</button>
+            <button class="gold" onclick="toggleMust('${x.id}')">${x.must ? "Unstar" : "⭐ Must"}</button>
+            <button class="danger" onclick="removePlace('${x.id}')">🗑️</button>
           </div>
         </div>
       </div>
@@ -321,13 +755,25 @@ function renderPlaces(){
   `;
 }
 
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, c => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[c]));
+/* -------------------- Helpers -------------------- */
+function cityName(k){
+  return ({
+    tokyo:"Tokyo",
+    kyoto:"Kyoto",
+    osaka:"Osaka",
+    hiroshima:"Hiroshima"
+  }[k] || k);
+}
+function cityEmoji(k){
+  return ({
+    tokyo:"🗼",
+    kyoto:"⛩️",
+    osaka:"🎏",
+    hiroshima:"🕊️"
+  }[k] || "📍");
 }
 
-/* ---------- Boot ---------- */
+/* -------------------- Boot -------------------- */
 render();
 </script>
 </body>
