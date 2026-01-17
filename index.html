@@ -17,20 +17,20 @@ body {
   margin: auto;
   padding: 16px 16px 90px;
 }
-h1 { margin: 0 0 6px; }
+h1 { margin: 0 0 6px; font-size: 30px; }
 .card {
   background: rgba(255,255,255,0.08);
   border-radius: 14px;
   padding: 12px;
   margin-bottom: 12px;
 }
-button, input {
+button, input, select {
   padding: 10px;
   border-radius: 10px;
   border: none;
   font-size: 15px;
 }
-.primary { background:#7dd3fc; color:#000; }
+.primary { background:#7dd3fc; color:#000; font-weight:700; }
 .small { opacity:.75; font-size:13px; }
 .mission {
   display:flex; justify-content:space-between; align-items:center;
@@ -38,12 +38,9 @@ button, input {
   padding:10px; border-radius:10px; margin-bottom:8px;
 }
 .stickers { font-size:32px; line-height:1.4; }
-
 .tabs {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 0; left: 0; right: 0;
   background: #111827;
   display: flex;
   border-top: 1px solid rgba(255,255,255,0.1);
@@ -53,12 +50,16 @@ button, input {
   background:none;
   color:white;
   padding:12px;
-  font-weight:600;
+  font-weight:700;
+  opacity: .75;
 }
 .tabs button.active {
   background:#1f2937;
+  opacity: 1;
 }
 progress { width:100%; height:16px; }
+.row { display:flex; gap:8px; }
+.row button { flex: 1; }
 </style>
 </head>
 
@@ -74,9 +75,14 @@ progress { width:100%; height:16px; }
 </div>
 
 <script>
+/* ---------- State + Storage ---------- */
+const screenEl = document.getElementById("screen");
+
 let tab = localStorage.getItem("tab") || "adventure";
-const KEY_STICKERS = "japan_stickers";
-const KEY_MONEY = "japan_money";
+
+const KEY_STICKERS = "japan_stickers_v2";
+const KEY_MONEY    = "japan_money_v2";
+const KEY_PLACES   = "japan_places_v2";
 
 const missions = {
   tokyo:[
@@ -95,89 +101,158 @@ const missions = {
 };
 
 function setTab(t){
-  tab=t;
-  localStorage.setItem("tab",t);
+  tab = t;
+  localStorage.setItem("tab", t);
   render();
 }
 
+function setActiveTab(){
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+  const active = document.getElementById("tab-"+tab);
+  if(active) active.classList.add("active");
+}
+
+/* ---------- Stickers ---------- */
 function getStickers(){
-  return JSON.parse(localStorage.getItem(KEY_STICKERS)||"[]");
+  try { return JSON.parse(localStorage.getItem(KEY_STICKERS) || "[]"); }
+  catch { return []; }
 }
-function saveSticker(s){
-  let a=getStickers(); a.push(s);
-  localStorage.setItem(KEY_STICKERS,JSON.stringify(a));
-  render();
+function addSticker(st){
+  const arr = getStickers();
+  arr.push(st);
+  localStorage.setItem(KEY_STICKERS, JSON.stringify(arr));
+  render(); // re-render to update sticker book
 }
 
+/* ---------- Money ---------- */
+function defaultMoney(){
+  return {
+    flights:   { label:"✈️ Flights",   saved:0, goal:3000 },
+    hotels:   { label:"🏨 Hotels",    saved:0, goal:2500 },
+    food:     { label:"🍣 Food",      saved:0, goal:1500 },
+    activities:{label:"🎟️ Activities",saved:0, goal:1200 }
+  };
+}
 function getMoney(){
-  return JSON.parse(localStorage.getItem(KEY_MONEY)||JSON.stringify({
-    flights:{saved:0,goal:3000},
-    hotels:{saved:0,goal:2500},
-    food:{saved:0,goal:1500}
-  }));
+  try { return JSON.parse(localStorage.getItem(KEY_MONEY)) || defaultMoney(); }
+  catch { return defaultMoney(); }
 }
 function saveMoney(m){
-  localStorage.setItem(KEY_MONEY,JSON.stringify(m));
+  localStorage.setItem(KEY_MONEY, JSON.stringify(m));
+}
+function addMoney(bucket, amount){
+  const m = getMoney();
+  if(!m[bucket]) return;
+  m[bucket].saved = Math.max(0, m[bucket].saved + amount);
+  saveMoney(m);
+  renderMoney(); // lightweight refresh
+  setActiveTab();
+}
+function setGoal(bucket, newGoal){
+  const m = getMoney();
+  if(!m[bucket]) return;
+  m[bucket].goal = Math.max(0, Number(newGoal) || 0);
+  if(m[bucket].saved > m[bucket].goal) m[bucket].saved = m[bucket].goal;
+  saveMoney(m);
+  renderMoney();
+  setActiveTab();
 }
 
-function render(){
-  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
-  document.getElementById("tab-"+tab).classList.add("active");
+/* ---------- Places (placeholder storage for next) ---------- */
+function getPlaces(){
+  try { return JSON.parse(localStorage.getItem(KEY_PLACES) || "[]"); }
+  catch { return []; }
+}
 
-  if(tab==="adventure") renderAdventure();
-  if(tab==="money") renderMoney();
-  if(tab==="places") renderPlaces();
+/* ---------- Renderers ---------- */
+function render(){
+  setActiveTab();
+  if(tab === "adventure") return renderAdventure();
+  if(tab === "money")     return renderMoney();
+  if(tab === "places")    return renderPlaces();
+  renderAdventure();
 }
 
 function renderAdventure(){
-  let s=getStickers();
-  screen.innerHTML=`
+  const s = getStickers();
+  screenEl.innerHTML = `
     <h1>🇯🇵 Our Japan Adventure</h1>
-    <div class="small">Do missions. Earn stickers.</div>
+    <div class="small">Pick a city, do a mission, earn stickers.</div>
+    <div style="height:12px"></div>
 
-    ${Object.keys(missions).map(city=>`
+    ${Object.keys(missions).map(city => `
       <div class="card">
-        <strong>${city.toUpperCase()}</strong><br><br>
-        ${missions[city].map(m=>`
+        <strong>${city.toUpperCase()}</strong>
+        <div style="height:10px"></div>
+        ${missions[city].map(m => `
           <div class="mission">
             <div>${m.t}</div>
-            <button class="primary" onclick="saveSticker('${m.s}')">Earn ${m.s}</button>
+            <button class="primary" onclick="addSticker('${m.s}')">Earn ${m.s}</button>
           </div>
         `).join("")}
       </div>
     `).join("")}
 
     <div class="card">
-      <strong>🎒 Stickers</strong><br><br>
-      <div class="stickers">${s.length?s.join(" "):"No stickers yet"}</div>
+      <strong>🎒 Sticker Book</strong>
+      <div style="height:10px"></div>
+      <div class="stickers">${s.length ? s.join(" ") : "No stickers yet"}</div>
+      <div class="small" style="margin-top:8px">Stickers earned: ${s.length}</div>
     </div>
   `;
 }
 
 function renderMoney(){
-  let m=getMoney();
-  screen.innerHTML=`
-    <h1>💰 Money Goals</h1>
-    <div class="small">Fill the bars to unlock Japan.</div>
+  const m = getMoney();
+  const totalSaved = Object.values(m).reduce((a,x)=>a+x.saved,0);
+  const totalGoal  = Object.values(m).reduce((a,x)=>a+x.goal,0);
 
-    ${Object.keys(m).map(k=>`
-      <div class="card">
-        <strong>${k.toUpperCase()}</strong>
-        <progress value="${m[k].saved}" max="${m[k].goal}"></progress>
-        <div class="small">$${m[k].saved} / $${m[k].goal}</div><br>
-        <button onclick="m[k].saved+=100; saveMoney(m); render()">Add $100</button>
-      </div>
-    `).join("")}
+  screenEl.innerHTML = `
+    <h1>💰 Money Goals</h1>
+    <div class="small">Make progress together. Tap +$ to “power up” the trip.</div>
+    <div style="height:12px"></div>
+
+    <div class="card">
+      <strong>Family Total</strong>
+      <div style="height:10px"></div>
+      <progress value="${totalSaved}" max="${Math.max(1,totalGoal)}"></progress>
+      <div class="small" style="margin-top:8px">$${totalSaved} / $${totalGoal}</div>
+    </div>
+
+    ${Object.keys(m).map(key => {
+      const b = m[key];
+      const max = Math.max(1, b.goal);
+      return `
+        <div class="card">
+          <strong>${b.label}</strong>
+          <div style="height:10px"></div>
+          <progress value="${b.saved}" max="${max}"></progress>
+          <div class="small" style="margin-top:8px">$${b.saved} / $${b.goal}</div>
+
+          <div class="row" style="margin-top:10px">
+            <button onclick="addMoney('${key}', 25)">+ $25</button>
+            <button onclick="addMoney('${key}', 100)">+ $100</button>
+            <button onclick="addMoney('${key}', -50)">- $50</button>
+          </div>
+
+          <div class="small" style="margin-top:10px">Goal:</div>
+          <input type="number" inputmode="numeric" value="${b.goal}"
+                 oninput="setGoal('${key}', this.value)" />
+        </div>
+      `;
+    }).join("")}
   `;
 }
 
 function renderPlaces(){
-  screen.innerHTML=`
+  // We’ll build the real “add ideas / vote / must-do” list next.
+  screenEl.innerHTML = `
     <h1>📍 Places & Experiences</h1>
-    <div class="small">We’ll build this next.</div>
+    <div class="small">Next: add ideas, vote as a family, mark must-dos.</div>
+    <div style="height:12px"></div>
 
     <div class="card">
-      Examples:
+      <strong>Examples to add</strong>
       <ul>
         <li>⚾ Tokyo baseball game</li>
         <li>🎢 Tokyo Disney</li>
@@ -187,6 +262,7 @@ function renderPlaces(){
   `;
 }
 
+/* ---------- Boot ---------- */
 render();
 </script>
 </body>
