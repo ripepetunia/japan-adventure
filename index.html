@@ -3,267 +3,89 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Our Japan Adventure</title>
-
+<title>Japan Adventure (Debug)</title>
 <style>
-body {
-  margin: 0;
-  font-family: -apple-system, system-ui;
-  background: #0b1220;
-  color: white;
-}
-.app {
-  max-width: 520px;
-  margin: auto;
-  padding: 16px 16px 90px;
-}
-h1 { margin: 0 0 6px; font-size: 30px; }
-.card {
-  background: rgba(255,255,255,0.08);
-  border-radius: 14px;
-  padding: 12px;
-  margin-bottom: 12px;
-}
-button, input, select {
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-  font-size: 15px;
-}
-.primary { background:#7dd3fc; color:#000; font-weight:700; }
-.small { opacity:.75; font-size:13px; }
-.mission {
-  display:flex; justify-content:space-between; align-items:center;
-  background: rgba(255,255,255,0.08);
-  padding:10px; border-radius:10px; margin-bottom:8px;
-}
-.stickers { font-size:32px; line-height:1.4; }
-.tabs {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  background: #111827;
-  display: flex;
-  border-top: 1px solid rgba(255,255,255,0.1);
-}
-.tabs button {
-  flex:1;
-  background:none;
-  color:white;
-  padding:12px;
-  font-weight:700;
-  opacity: .75;
-}
-.tabs button.active {
-  background:#1f2937;
-  opacity: 1;
-}
-progress { width:100%; height:16px; }
-.row { display:flex; gap:8px; }
-.row button { flex: 1; }
+  body{margin:0;font-family:-apple-system,system-ui;background:#0b1220;color:#fff}
+  .app{max-width:620px;margin:auto;padding:16px}
+  .card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;margin:12px 0}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;white-space:pre-wrap;word-break:break-word}
+  .ok{color:#86efac;font-weight:700}
+  .bad{color:#fca5a5;font-weight:800}
+  button{padding:10px 12px;border-radius:10px;border:none;font-weight:700}
 </style>
 </head>
-
 <body>
 <div class="app">
-  <div id="screen"></div>
-</div>
+  <h1>🇯🇵 Japan Adventure</h1>
+  <div class="card">
+    <div class="ok" id="status">Booting…</div>
+    <div class="mono" id="details">If this stays stuck, JS is not executing.</div>
+  </div>
 
-<div class="tabs">
-  <button onclick="setTab('adventure')" id="tab-adventure">🎒 Adventure</button>
-  <button onclick="setTab('money')" id="tab-money">💰 Money</button>
-  <button onclick="setTab('places')" id="tab-places">📍 Places</button>
+  <div class="card" id="ui">
+    <div>UI placeholder…</div>
+  </div>
+
+  <div class="card">
+    <button onclick="location.reload()">Reload</button>
+    <button onclick="localStorage.clear()">Clear Local Storage</button>
+  </div>
 </div>
 
 <script>
-/* ---------- State + Storage ---------- */
-const screenEl = document.getElementById("screen");
+(function(){
+  const statusEl  = document.getElementById("status");
+  const detailsEl = document.getElementById("details");
+  const uiEl      = document.getElementById("ui");
 
-let tab = localStorage.getItem("tab") || "adventure";
+  function setOK(msg){
+    statusEl.className = "ok";
+    statusEl.textContent = msg;
+  }
+  function setBAD(msg){
+    statusEl.className = "bad";
+    statusEl.textContent = msg;
+  }
+  function log(line){
+    detailsEl.textContent += "\n" + line;
+  }
 
-const KEY_STICKERS = "japan_stickers_v2";
-const KEY_MONEY    = "japan_money_v2";
-const KEY_PLACES   = "japan_places_v2";
-
-const missions = {
-  tokyo:[
-    {t:"Ride a super train",s:"🚅"},
-    {t:"Eat ramen",s:"🍜"},
-    {t:"Find a robot",s:"🤖"}
-  ],
-  kyoto:[
-    {t:"Visit a temple",s:"⛩️"},
-    {t:"Try a new snack",s:"🏮"}
-  ],
-  osaka:[
-    {t:"Try sushi",s:"🍣"},
-    {t:"Find a tall view",s:"🗻"}
-  ]
-};
-
-function setTab(t){
-  tab = t;
-  localStorage.setItem("tab", t);
-  render();
-}
-
-function setActiveTab(){
-  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
-  const active = document.getElementById("tab-"+tab);
-  if(active) active.classList.add("active");
-}
-
-/* ---------- Stickers ---------- */
-function getStickers(){
-  try { return JSON.parse(localStorage.getItem(KEY_STICKERS) || "[]"); }
-  catch { return []; }
-}
-function addSticker(st){
-  const arr = getStickers();
-  arr.push(st);
-  localStorage.setItem(KEY_STICKERS, JSON.stringify(arr));
-  render(); // re-render to update sticker book
-}
-
-/* ---------- Money ---------- */
-function defaultMoney(){
-  return {
-    flights:   { label:"✈️ Flights",   saved:0, goal:3000 },
-    hotels:   { label:"🏨 Hotels",    saved:0, goal:2500 },
-    food:     { label:"🍣 Food",      saved:0, goal:1500 },
-    activities:{label:"🎟️ Activities",saved:0, goal:1200 }
+  // Catch runtime errors
+  window.onerror = function(message, source, lineno, colno, error){
+    setBAD("JavaScript error (window.onerror)");
+    log("message: " + message);
+    log("source: " + source);
+    log("line: " + lineno + " col: " + colno);
+    if (error && error.stack) log("stack:\n" + error.stack);
+    return true;
   };
-}
-function getMoney(){
-  try { return JSON.parse(localStorage.getItem(KEY_MONEY)) || defaultMoney(); }
-  catch { return defaultMoney(); }
-}
-function saveMoney(m){
-  localStorage.setItem(KEY_MONEY, JSON.stringify(m));
-}
-function addMoney(bucket, amount){
-  const m = getMoney();
-  if(!m[bucket]) return;
-  m[bucket].saved = Math.max(0, m[bucket].saved + amount);
-  saveMoney(m);
-  renderMoney(); // lightweight refresh
-  setActiveTab();
-}
-function setGoal(bucket, newGoal){
-  const m = getMoney();
-  if(!m[bucket]) return;
-  m[bucket].goal = Math.max(0, Number(newGoal) || 0);
-  if(m[bucket].saved > m[bucket].goal) m[bucket].saved = m[bucket].goal;
-  saveMoney(m);
-  renderMoney();
-  setActiveTab();
-}
 
-/* ---------- Places (placeholder storage for next) ---------- */
-function getPlaces(){
-  try { return JSON.parse(localStorage.getItem(KEY_PLACES) || "[]"); }
-  catch { return []; }
-}
+  window.onunhandledrejection = function(e){
+    setBAD("Promise rejection (unhandled)");
+    log(String(e.reason && (e.reason.stack || e.reason) || e));
+  };
 
-/* ---------- Renderers ---------- */
-function render(){
-  setActiveTab();
-  if(tab === "adventure") return renderAdventure();
-  if(tab === "money")     return renderMoney();
-  if(tab === "places")    return renderPlaces();
-  renderAdventure();
-}
+  // Prove JS is running
+  setOK("JS is running ✅");
+  detailsEl.textContent = "User agent:\n" + navigator.userAgent + "\n\nLocation:\n" + location.href;
 
-function renderAdventure(){
-  const s = getStickers();
-  screenEl.innerHTML = `
-    <h1>🇯🇵 Our Japan Adventure</h1>
-    <div class="small">Pick a city, do a mission, earn stickers.</div>
-    <div style="height:12px"></div>
-
-    ${Object.keys(missions).map(city => `
-      <div class="card">
-        <strong>${city.toUpperCase()}</strong>
-        <div style="height:10px"></div>
-        ${missions[city].map(m => `
-          <div class="mission">
-            <div>${m.t}</div>
-            <button class="primary" onclick="addSticker('${m.s}')">Earn ${m.s}</button>
-          </div>
-        `).join("")}
-      </div>
-    `).join("")}
-
-    <div class="card">
-      <strong>🎒 Sticker Book</strong>
-      <div style="height:10px"></div>
-      <div class="stickers">${s.length ? s.join(" ") : "No stickers yet"}</div>
-      <div class="small" style="margin-top:8px">Stickers earned: ${s.length}</div>
-    </div>
+  // Minimal render test
+  uiEl.innerHTML = `
+    <div style="font-weight:800;margin-bottom:8px;">Render test</div>
+    <div>If you can read this, DOM updates are working.</div>
+    <div style="margin-top:10px;">Time: <span id="t"></span></div>
   `;
-}
+  document.getElementById("t").textContent = new Date().toString();
 
-function renderMoney(){
-  const m = getMoney();
-  const totalSaved = Object.values(m).reduce((a,x)=>a+x.saved,0);
-  const totalGoal  = Object.values(m).reduce((a,x)=>a+x.goal,0);
-
-  screenEl.innerHTML = `
-    <h1>💰 Money Goals</h1>
-    <div class="small">Make progress together. Tap +$ to “power up” the trip.</div>
-    <div style="height:12px"></div>
-
-    <div class="card">
-      <strong>Family Total</strong>
-      <div style="height:10px"></div>
-      <progress value="${totalSaved}" max="${Math.max(1,totalGoal)}"></progress>
-      <div class="small" style="margin-top:8px">$${totalSaved} / $${totalGoal}</div>
-    </div>
-
-    ${Object.keys(m).map(key => {
-      const b = m[key];
-      const max = Math.max(1, b.goal);
-      return `
-        <div class="card">
-          <strong>${b.label}</strong>
-          <div style="height:10px"></div>
-          <progress value="${b.saved}" max="${max}"></progress>
-          <div class="small" style="margin-top:8px">$${b.saved} / $${b.goal}</div>
-
-          <div class="row" style="margin-top:10px">
-            <button onclick="addMoney('${key}', 25)">+ $25</button>
-            <button onclick="addMoney('${key}', 100)">+ $100</button>
-            <button onclick="addMoney('${key}', -50)">- $50</button>
-          </div>
-
-          <div class="small" style="margin-top:10px">Goal:</div>
-          <input type="number" inputmode="numeric" value="${b.goal}"
-                 oninput="setGoal('${key}', this.value)" />
-        </div>
-      `;
-    }).join("")}
-  `;
-}
-
-function renderPlaces(){
-  // We’ll build the real “add ideas / vote / must-do” list next.
-  screenEl.innerHTML = `
-    <h1>📍 Places & Experiences</h1>
-    <div class="small">Next: add ideas, vote as a family, mark must-dos.</div>
-    <div style="height:12px"></div>
-
-    <div class="card">
-      <strong>Examples to add</strong>
-      <ul>
-        <li>⚾ Tokyo baseball game</li>
-        <li>🎢 Tokyo Disney</li>
-        <li>🏛️ Hiroshima Peace Memorial Museum</li>
-      </ul>
-    </div>
-  `;
-}
-
-/* ---------- Boot ---------- */
-render();
+  // Confirm localStorage works
+  try{
+    localStorage.setItem("ja_debug", "ok");
+    log("\nlocalStorage: ok");
+  }catch(err){
+    setBAD("localStorage blocked");
+    log("localStorage error: " + (err && err.message ? err.message : String(err)));
+  }
+})();
 </script>
 </body>
 </html>
